@@ -1,0 +1,53 @@
+---
+title: "Untitled"
+author: "Occam"
+date: "24 April 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(ggthemes)
+library(plotly)
+
+energy.data.raw <- read.csv("data/01330006-eng.csv")
+
+energy.data <- read.csv("data/01330006-eng.csv") %>%
+  mutate(Ref_Date = as.character(Ref_Date)) %>%
+  mutate(Ref_Date = substr(Ref_Date, start = 1, stop = 4)) %>%
+  mutate(Ref_Date = as.numeric(Ref_Date))
+
+crude.oil.barrels.spread <- energy.data.raw %>%
+  select(-c(Vector, Coordinate)) %>%
+  filter(STA == "Barrels") %>%
+  filter(PRO == "Crude oil and equivalent products") %>%
+  spread(key = PIP, value = Value) 
+
+
+energy.data.canada <- filter(energy.data, GEO == "Canada")
+p2 <- ggplot(data = energy.data.canada, aes(x=Ref_Date, y=Value)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ PIP, ncol = 3) +
+  theme_fivethirtyeight()
+
+```
+
+#Summary Analysis
+
+The total number of barrels of crude oil imports in Canada was `r sum(crude.oil.barrels.spread$Imports)`
+
+
+## Energy Profile for Canada
+```{r}
+p2
+```
+
+
+
